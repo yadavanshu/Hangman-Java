@@ -17,11 +17,12 @@ public class Main extends JFrame {
     };
 
     private String[][] words = {
-            {"india", "pakistan", "nepal", "malaysia", "philippines", "australia", "iran", "ethiopia", "oman", "indonesia"},
-            {"iphone", "samsung", "nokia", "oneplus", "xiaomi", "motorola", "huawei", "google", "sony", "lg"},
-            {"harry", "hermione", "ron", "dumbledore", "voldemort", "snape", "draco", "hagrid", "sirius", "lupin"},
-            {"python", "java", "cplusplus", "javascript", "ruby", "swift", "kotlin", "golang", "rust", "typescript"},
-            {"einstein", "newton", "galileo", "curie", "darwin", "tesla", "hawking", "bohr", "fermi", "planck"}
+            { "india", "pakistan", "nepal", "malaysia", "philippines", "australia", "iran", "ethiopia", "oman",
+                    "indonesia" },
+            { "iphone", "samsung", "nokia", "oneplus", "xiaomi", "motorola", "huawei", "google", "sony", "lg" },
+            { "harry", "hermione", "ron", "dumbledore", "voldemort", "snape", "draco", "hagrid", "sirius", "lupin" },
+            { "python", "java", "cplusplus", "javascript", "ruby", "swift", "kotlin", "golang", "rust", "typescript" },
+            { "einstein", "newton", "galileo", "curie", "darwin", "tesla", "hawking", "bohr", "fermi", "planck" }
     };
 
     private String secretWord;
@@ -54,20 +55,10 @@ public class Main extends JFrame {
         guessButton.setBackground(new Color(255, 165, 0)); // Orange button
         guessButton.setForeground(Color.WHITE);
         guessButton.setFocusPainted(false);
-        guessButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                makeGuess();
-            }
-        });
+        guessButton.addActionListener(e -> makeGuess());
 
         // Add Enter functionality to input field
-        inputField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                makeGuess();
-            }
-        });
+        inputField.addActionListener(e -> makeGuess());
 
         JButton quitButton = new JButton("Quit");
         quitButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -107,6 +98,7 @@ public class Main extends JFrame {
 
         updateDisplay();
         setVisible(true);
+        setLocationRelativeTo(null); // Center the window on screen
     }
 
     private void initializeGame() {
@@ -126,17 +118,20 @@ public class Main extends JFrame {
                 categories,
                 categories[0]);
 
-        if (category != null) {
-            int categoryIndex = -1;
-            for (int i = 0; i < categories.length; i++) {
-                if (categories[i].equals(category)) {
-                    categoryIndex = i;
-                    break;
-                }
+        // Check if the user canceled the dialog
+        if (category == null) {
+            System.exit(0); // Exit the game if canceled
+        }
+
+        int categoryIndex = -1;
+        for (int i = 0; i < categories.length; i++) {
+            if (categories[i].equals(category)) {
+                categoryIndex = i;
+                break;
             }
-            if (categoryIndex != -1) {
-                return getRandomWord(words[categoryIndex]);
-            }
+        }
+        if (categoryIndex != -1) {
+            return getRandomWord(words[categoryIndex]);
         }
         return "";
     }
@@ -158,17 +153,21 @@ public class Main extends JFrame {
                 int matches = letterFill(letter);
                 if (matches == 0) {
                     attemptsLeft--;
-                    JOptionPane.showMessageDialog(this, "Whoops! That letter isn't in there!", "Incorrect Guess", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Whoops! That letter isn't in there!", "Incorrect Guess",
+                            JOptionPane.WARNING_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, "You found a letter! Isn't that exciting!", "Correct Guess", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "You found a letter! Isn't that exciting!", "Correct Guess",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "You've already guessed that letter. Try again.", "Repeated Guess", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "You've already guessed that letter. Try again.", "Repeated Guess",
+                        JOptionPane.ERROR_MESSAGE);
             }
 
             updateDisplay();
         } else {
-            JOptionPane.showMessageDialog(this, "Invalid input. Please enter a letter.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Invalid input. Please enter a letter.", "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -187,22 +186,41 @@ public class Main extends JFrame {
 
     private void updateDisplay() {
         wordLabel.setText(guessedWord.toString());
-        attemptsLabel.setText("Attempts left: " + attemptsLeft + "\nUsed letters: " + usedLetters);
+        attemptsLabel.setText("<html>Attempts left: " + attemptsLeft + "<br>Used letters: " + usedLetters + "</html>");
 
         if (attemptsLeft == 0) {
-            int option = JOptionPane.showConfirmDialog(this, "Sorry, you lose... you've been hanged. The word was: " + secretWord + "\nWould you like to restart the game?", "Game Over", JOptionPane.YES_NO_OPTION);
-            if (option == JOptionPane.YES_OPTION) {
-                resetGame();
-            } else {
-                System.exit(0); // Close the game if No is selected
-            }
+            showGameOverDialog();
         } else if (guessedWord.toString().equals(secretWord)) {
-            int option = JOptionPane.showConfirmDialog(this, "Congratulations! You've guessed the word: " + secretWord + "\nWould you like to restart the game?", "You Won!", JOptionPane.YES_NO_OPTION);
-            if (option == JOptionPane.YES_OPTION) {
-                resetGame();
-            } else {
-                System.exit(0); // Close the game if No is selected
-            }
+            showWinDialog();
+        }
+    }
+
+    private void showGameOverDialog() {
+        String message = String.format(
+                "<html><h2 style='color: red;'>Game Over</h2>" +
+                        "<p style='font-size: 16px;'>Sorry, you lose... you've been hanged.</p>" +
+                        "<p style='font-size: 16px;'>The word was: <b>%s</b></p>" +
+                        "<p style='font-size: 16px;'>Would you like to restart the game?</p></html>",
+                secretWord);
+        int option = JOptionPane.showConfirmDialog(this, message, "Game Over", JOptionPane.YES_NO_OPTION);
+        handleDialogResponse(option);
+    }
+
+    private void showWinDialog() {
+        String message = String.format(
+                "<html><h2 style='color: green;'>Congratulations!</h2>" +
+                        "<p style='font-size: 16px;'>You've guessed the word: <b>%s</b></p>" +
+                        "<p style='font-size: 16px;'>Would you like to restart the game?</p></html>",
+                secretWord);
+        int option = JOptionPane.showConfirmDialog(this, message, "You Won!", JOptionPane.YES_NO_OPTION);
+        handleDialogResponse(option);
+    }
+
+    private void handleDialogResponse(int option) {
+        if (option == JOptionPane.YES_OPTION) {
+            resetGame();
+        } else {
+            System.exit(0); // Close the game if No is selected
         }
     }
 
