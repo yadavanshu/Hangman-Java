@@ -1,5 +1,5 @@
 # Hangman Game in Java
-
+# Refactor
 ## Overview
 This project is a simple implementation of the classic Hangman game using Java with a graphical user interface (GUI). Players can choose words from various categories and guess letters to reveal the hidden word within a limited number of attempts.
 
